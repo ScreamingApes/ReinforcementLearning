@@ -1,6 +1,6 @@
 import gym
 
-env = gym.make('CartPole-v0')
+env = gym.make('CartPole-v0').env
 env.reset()
 
 for _ in range(1000):
