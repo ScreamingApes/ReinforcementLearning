@@ -41,7 +41,7 @@ class CartPole():
         self.brain.save(FILENAME)
 
     def pick_action(self, state, rand=True):
-        if np.random.rand() <= self.exploration_rate:
+        if rand and np.random.rand() <= self.exploration_rate:
             return self.env.action_space.sample()
         return np.argmax(self.brain.predict(state)[0])
 
