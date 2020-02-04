@@ -10,8 +10,6 @@ from time import sleep
 import os
 
 FILENAME = "model-cartpole.h5"
-count_0 = 0
-count_1 = 0
 
 
 class CartPole():
