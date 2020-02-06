@@ -15,13 +15,13 @@ FILENAME = "mountain-weight.h5"
 
 class Agent():
 
-    def __init__(self, action_dim, state_dim, brain_layers=[64, 24], gamma=0.99, learning_rate=0.01, num_samples=32, load_from_file=False):
+    def __init__(self, action_dim, state_dim, brain_layers=[64, 24], gamma=0.99, learning_rate=0.005, num_samples=32, load_from_file=False):
         self.action_dim = action_dim
         self.state_dim = state_dim
         self.gamma = gamma
-        self.exploration_rate = 0.5
-        self.exploration_min = 0.1
-        self.exploration_decay = 0.995
+        self.exploration_rate = 0.75
+        self.exploration_min = 0.01
+        self.exploration_decay = 0.9995
         self.learning_rate = learning_rate
         self.memory = deque(maxlen=2000)
         self.num_samples = num_samples
@@ -82,7 +82,6 @@ class MountainCar():
         self.space_dim = self.env.observation_space.shape[0]
         self.agent = Agent(self.env.action_space.n,
                            self.space_dim, load_from_file=load_from_file)
-        self.max_reward = 10
         self.evaluation_data = []
 
     def action_to_string(self, action):
@@ -218,11 +217,12 @@ def plot(eps, data):
 
 if __name__ == "__main__":
     episodes_training = 10000
-    step_eval = 500
+    step_eval = 200
     evaluation_steps = [0] + [i * step_eval -
                               1 for i in range(1, int(episodes_training / step_eval) + 1)]
 
-    sim = MountainCar(episodes=episodes_training, load_from_file=False)
-    sim.fit(visualize=False, evaluation=evaluation_steps)
+    sim = MountainCar(episodes=episodes_training, load_from_file=True)
+    #sim.fit(visualize=False, evaluation=evaluation_steps)
 
-    plot(evaluation_steps, sim.evaluation_data)
+    #plot(evaluation_steps, sim.evaluation_data)
+    sim.visualize()
