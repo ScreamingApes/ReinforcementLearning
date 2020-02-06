@@ -27,7 +27,7 @@ class Agent_Pong():
     def init_brain(self):
         model = Sequential()
         model.add(Conv2D(16, 8, strides=(4, 4), activation='relu',
-                         input_shape=self.state_dim))
+                         input_shape=(160, 160, 4)))
         model.add(Conv2D(32, 4, strides=(2, 2), activation='relu'))
         model.add(Flatten())
         model.add(Dense(256, activation='linear'))
@@ -72,7 +72,7 @@ class Pong():
     def __init__(self, episodes=100_000):
         self.env = gym.make("Pong-v0").env
         self.episodes = episodes
-        self.agent = Agent_Pong(self.env.action_space.n, (160, 160, 4))
+        self.agent = Agent_Pong(self.env.action_space.n, (4, 160, 160))
         self.last_four_frames = deque(maxlen=4)
 
     # converts an rgb image to gray scale image
@@ -83,19 +83,19 @@ class Pong():
         # remove score bar and bottom bar
         return img[34:194]
 
-    def __img2net(self, img):
+    def img2net(self, img):
         return self.__reduce_size(self.__rgb2gray(img))
 
     # phi function in Mnih et al paper
     def get_state(self):
-        return np.array(self.last_four_frames)
+        return np.array(self.last_four_frames).reshape((1,160,160,4))
 
     def __add_frame(self, f):
-        self.last_four_frames.append(self.__img2net(f))
+        self.last_four_frames.append(self.img2net(f))
 
     def fit(self, visualize=False):
-
-        for e in tqdm(range(self.episodes)):
+        pbar = tqdm(range(self.episodes))
+        for e in pbar:
 
             # take the first four frames and convert them to gray scale and reduce size
             self.__add_frame(self.env.reset())
@@ -120,6 +120,8 @@ class Pong():
 
                 self.agent.remember(current_state, action,
                                     reward, next_state, done)
+
+                pbar.set_description(f"{reward}")
 
                 self.agent.learn()
 
