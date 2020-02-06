@@ -5,6 +5,7 @@ from keras.layers import Dense, Conv2D, Flatten
 from keras.optimizers import Adam
 from collections import deque
 from tqdm import tqdm
+import os
 import random
 
 FILENAME = "pong-model.h5"
@@ -22,9 +23,9 @@ class Agent_Pong():
         self.learning_rate = learning_rate
         self.memory = deque(maxlen=1_000_000)
         self.num_samples = num_samples
-        self.brain = self.init_brain()
+        self.brain = self.init_brain(load_from_file)
 
-    def init_brain(self):
+    def init_brain(self, load_from_file):
         model = Sequential()
         model.add(Conv2D(16, 8, strides=(4, 4), activation='relu',
                          input_shape=(160, 160, 4)))
@@ -34,6 +35,9 @@ class Agent_Pong():
         model.add(Dense(self.action_dim, activation='linear'))
         model.compile(loss='mse', optimizer=Adam(
             learning_rate=self.learning_rate))
+        if load_from_file and os.path.isfile(FILENAME):
+            model.load_weights(FILENAME)
+            self.exploration_rate = self.exploration_min
         return model
 
     def save_brain(self):
@@ -88,42 +92,48 @@ class Pong():
 
     # phi function in Mnih et al paper
     def get_state(self):
-        return np.array(self.last_four_frames).reshape((1,160,160,4))
+        return np.array(self.last_four_frames).reshape((1, 160, 160, 4))
 
     def __add_frame(self, f):
         self.last_four_frames.append(self.img2net(f))
 
     def fit(self, visualize=False):
+
         pbar = tqdm(range(self.episodes))
-        for e in pbar:
 
-            # take the first four frames and convert them to gray scale and reduce size
-            self.__add_frame(self.env.reset())
-            for _ in range(3):
-                action = self.env.action_space.sample()
-                state, _, _, _ = self.env.step(action)
-                self.__add_frame(state)
+        try:
 
-            done = False
+            for e in pbar:
 
-            while not done:
+                # take the first four frames and convert them to gray scale and reduce size
+                self.__add_frame(self.env.reset())
+                for _ in range(3):
+                    action = self.env.action_space.sample()
+                    state, _, _, _ = self.env.step(action)
+                    self.__add_frame(state)
 
-                if visualize and e % 500 == 0:
-                    self.env.render()
+                done = False
 
-                current_state = self.get_state()
-                action = self.agent.pick_action(current_state)
-                next_state, reward, done, _ = self.env.step(action)
+                while not done:
 
-                self.__add_frame(next_state)
-                next_state = self.get_state()
+                    if visualize and e % 500 == 0:
+                        self.env.render()
 
-                self.agent.remember(current_state, action,
-                                    reward, next_state, done)
+                    current_state = self.get_state()
+                    action = self.agent.pick_action(current_state)
+                    next_state, reward, done, _ = self.env.step(action)
 
-                pbar.set_description(f"{reward}")
+                    self.__add_frame(next_state)
+                    next_state = self.get_state()
 
-                self.agent.learn()
+                    self.agent.remember(current_state, action,
+                                        reward, next_state, done)
+
+                    pbar.set_description(f"{reward}")
+
+                    self.agent.learn()
+        finally:
+            self.agent.save_brain()
 
 
 if __name__ == "__main__":
