@@ -4,11 +4,14 @@ from time import sleep
 from tqdm import tqdm
 import random
 import numpy as np
+from sys import argv
 
 EPISODES = 100_000
 EPSILON = 0.1
 ALPHA = 0.1
 GAMMA = 0.6
+
+outfile = "taxi-driver.npy"
 
 # tutorial: https://www.learndatasci.com/tutorials/reinforcement-q-learning-scratch-python-openai-gym/
 
@@ -138,9 +141,24 @@ def q_visualize(q_table):
     
     print_frames(frames, 0.5)
 
+def save_q_table(q_table):
+    np.save(outfile, q_table)
+    print("Saved Q table in", outfile)
+
+def load_q_table():
+    q_table = np.load(outfile)
+    print("Loaded Q table from", outfile)
+    return q_table
+
 if __name__ == "__main__":
-    # random_actions()
-    q_table = q_learning()
-    q_evaluate(q_table)
-    input()
-    q_visualize(q_table)
+    
+    if len(argv) > 1 and argv[1] == "load":
+        q_table = load_q_table()
+        q_visualize(q_table)
+    elif len(argv) > 1 and argv[1] == "save":
+        q_table = q_learning()
+        save_q_table(q_table)
+    elif len(argv) > 1 and argv[1] == "random":
+        random_actions()
+    else:
+        print("Usage: %s [save|load|random]" % argv[0])
