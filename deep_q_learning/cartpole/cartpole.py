@@ -34,11 +34,13 @@ class CartPole():
         model.compile(loss='mse', optimizer=Adam(lr=self.alpha))
         if load_from_file and os.path.isfile(FILENAME):
             model.load_weights(FILENAME)
+            print("Loaded brain in", FILENAME)
             self.exploration_rate = self.exploration_min
         return model
 
     def save_brain(self):
         self.brain.save(FILENAME)
+        print("Saved brain in", FILENAME)
 
     def pick_action(self, state, rand=True):
         if rand and np.random.rand() <= self.exploration_rate:
@@ -78,7 +80,7 @@ class CartPole():
                 score = 0
 
                 while not done:
-                    self.env.render()
+                    #self.env.render()
                     action = self.pick_action(current_state)
                     next_state, reward, done, _ = self.env.step(action)
 
@@ -120,5 +122,5 @@ class CartPole():
 
 if __name__ == "__main__":
     c = CartPole(load_from_file=True)
-    c.fit()
+    #c.fit()
     c.visualize()

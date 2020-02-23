@@ -15,7 +15,7 @@ FILENAME = "lunar-lander-weight.h5"
 
 class Agent():
 
-    def __init__(self, action_dim, state_dim, brain_layers=[48, 64], gamma=0.99, learning_rate=0.01, num_samples=128, load_from_file=False):
+    def __init__(self, action_dim, state_dim, brain_layers=[48, 64], gamma=0.99, learning_rate=0.01, num_samples=32, load_from_file=False):
         self.action_dim = action_dim
         self.state_dim = state_dim
         self.gamma = gamma
@@ -23,7 +23,7 @@ class Agent():
         self.exploration_min = 0.1
         self.exploration_decay = 0.9995
         self.learning_rate = learning_rate
-        self.memory = deque(maxlen=10000)
+        self.memory = deque(maxlen=2000)
         self.num_samples = num_samples
         self.brain = self.__init_brain(brain_layers, load_from_file)
 
@@ -183,7 +183,7 @@ class LunarLander():
                     frames = 0
                     state = self.env.reset().reshape((1, self.space_dim))
         finally:
-            print("ciao")
+            self.agent.save_brain()
 
 
 def plot(eps, data):
@@ -202,10 +202,11 @@ if __name__ == "__main__":
     episodes_training = 10000
     step_eval = 1000
     evaluation_steps = [0] + [i * step_eval -
-                              1 for i in range(1, int(episodes_training / step_eval) + 1)]
+                                  1 for i in range(1, int(episodes_training / step_eval) + 1)]
+    evaluation_steps = []
 
     sim = LunarLander(episodes=episodes_training, load_from_file=True)
-    sim.fit(visualize=False, evaluation=evaluation_steps)
+    #sim.fit(visualize=False, evaluation=evaluation_steps)
 
     #plot(evaluation_steps, sim.evaluation_data)
     sim.visualize()

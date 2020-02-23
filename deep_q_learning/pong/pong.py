@@ -131,11 +131,11 @@ class Pong():
 
                     pbar.set_description(f"{reward}")
 
-                    self.agent.learn()
+                self.agent.learn()
         finally:
             self.agent.save_brain()
 
 
 if __name__ == "__main__":
     sim = Pong()
-    sim.fit(visualize=True)
+    sim.fit(visualize=False)
